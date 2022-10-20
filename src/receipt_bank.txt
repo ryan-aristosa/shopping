@@ -1,0 +1,8 @@
+Account name: David Beckham
+Account number: 005412345678
+Bank name: BDO
+Total amount due:
+Total amount: 943.000000
+Total amount compact: 943
+Number of items: 8
+
