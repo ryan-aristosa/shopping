@@ -23,6 +23,7 @@ public class Main extends Helper {
                     continue;
                 }
                 case -2 -> {
+                    System.out.println("Program Exiting now...");
                     categoryFlag = false;
                     continue;
                 }

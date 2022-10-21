@@ -19,7 +19,6 @@ public class Helper {
     protected static double total = 0;
     private static final NumberFormat amountFormat = NumberFormat.getCompactNumberInstance(Locale.US, NumberFormat.Style.SHORT);
 
-
     public static void readStocks() {
         Path stocksPath = Paths.get("src//stocks.csv");
         try {
@@ -280,5 +279,6 @@ public class Helper {
         itemCart.clear();
         transactCart.clear();
         numberOfItems = 0;
+        total = 0;
     }
 }
