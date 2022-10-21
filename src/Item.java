@@ -3,8 +3,8 @@ public class Item {
     private String product, unit, category;
     private double price;
 
-    public Item(String item, double price, String unit, String category) {
-        this.product = item;
+    public Item(String product, double price, String unit, String category) {
+        this.product = product;
         this.price = price;
         this.unit = unit;
         this.category = category;
@@ -40,15 +40,5 @@ public class Item {
 
     public void setPrice(double price) {
         this.price = price;
-    }
-
-    @Override
-    public String toString() {
-        return "Stocks{" +
-                "product='" + product + '\'' +
-                ", price=" + price +
-                ", unit='" + unit + '\'' +
-                ", category='" + category + '\'' +
-                '}';
     }
 }
