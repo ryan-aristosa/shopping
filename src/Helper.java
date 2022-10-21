@@ -2,11 +2,11 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.text.NumberFormat;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 public class Helper {
     private static final List<Item> PANTRY = new ArrayList<>();
@@ -16,6 +16,9 @@ public class Helper {
     protected static List<Item> itemCart = new ArrayList<>();
     protected static List<Transaction> transactCart = new ArrayList<>();
     protected static int numberOfItems = 0;
+    protected static double total = 0;
+    private static final NumberFormat amountFormat = NumberFormat.getCompactNumberInstance(Locale.US, NumberFormat.Style.SHORT);
+
 
     public static void readStocks() {
         Path stocksPath = Paths.get("src//stocks.csv");
@@ -53,7 +56,7 @@ public class Helper {
     }
 
     public static int validateSelectedCategory() {
-        int selectedCategory = 0;
+        int selectedCategory;
         Scanner scanner = new Scanner(System.in);
 
         try {
@@ -76,7 +79,7 @@ public class Helper {
     public static void showItemsInCategory(AtomicInteger itemKey, Item item) {
         System.out.println(
                 "[%d]%-55s price %s/%s".formatted(
-                        itemKey.getAndIncrement(), item.getProduct(), item.getPrice(), item.getUnit()
+                        itemKey.getAndIncrement(), item.product(), item.price(), item.unit()
                 )
         );
     }
@@ -139,15 +142,15 @@ public class Helper {
 
     public static void addToCart(int selectedCategory, int selectedItem, double quantity) {
         // Add to cart
-        String product = itemList.get(selectedCategory).get(selectedItem).getProduct();
-        double price = itemList.get(selectedCategory).get(selectedItem).getPrice();
-        String unit = itemList.get(selectedCategory).get(selectedItem).getUnit();
-        String category = itemList.get(selectedCategory).get(selectedItem).getCategory();
+        String product = itemList.get(selectedCategory).get(selectedItem).product();
+        double price = itemList.get(selectedCategory).get(selectedItem).price();
+        String unit = itemList.get(selectedCategory).get(selectedItem).unit();
+        String category = itemList.get(selectedCategory).get(selectedItem).category();
         double subTotal = price * quantity;
         boolean isExisting = false;
 
         for (int i = 0; i < itemCart.size(); i++) {
-            if (itemCart.get(i).getProduct().equals(product)) {
+            if (itemCart.get(i).product().equals(product)) {
                 transactCart.get(i).setQuantity(transactCart.get(i).getQuantity() + quantity);
                 transactCart.get(i).setSubTotal(transactCart.get(i).getSubTotal() + subTotal);
                 isExisting = true;
@@ -161,15 +164,7 @@ public class Helper {
         // Show cart details
         String itemAdded = "\nItem added: %s | %s/%s x %s | %s"
                 .formatted(product, String.format("%.2f", price), unit, quantity, subTotal);
-        // TODO: Collectors teeing
-        List<Object> dataStream = transactCart.stream().collect(
-                Collectors.teeing(
-                        Collectors.summingDouble(Transaction::getSubTotal),
-                        Collectors.counting(),
-                        List::of
-                )
-        );
-        NumberFormat amountFormat = NumberFormat.getCompactNumberInstance(Locale.US, NumberFormat.Style.SHORT);
+        total = transactCart.stream().mapToDouble(Transaction::getSubTotal).sum();
         amountFormat.setMinimumFractionDigits(3);
         String cartContents = """
                 %s
@@ -180,11 +175,13 @@ public class Helper {
 
         System.out.println(cartContents.formatted(
                 itemAdded,
-                String.format("%.2f", (Double) dataStream.get(0)),
-                amountFormat.format(dataStream.get(0)),
+                String.format("%.2f", total),
+                amountFormat.format(total),
                 numberOfItems));
+        showCartItems();
+    }
 
-        // Show items in cart
+    public static void showCartItems() {
         String itemFormat = "%s | %s/%s x %s | %s";
 
         System.out.println("\n");
@@ -193,12 +190,94 @@ public class Helper {
             Transaction transaction = transactCart.get(i);
 
             System.out.println(itemFormat.formatted(
-                    item.getProduct(),
-                    String.format("%.2f", item.getPrice()),
-                    item.getUnit(),
+                    item.product(),
+                    String.format("%.2f", item.price()),
+                    item.unit(),
                     transaction.getQuantity(),
                     String.format("%.2f", transaction.getSubTotal())
             ));
         }
+    }
+
+    public static void checkout() {
+        // Payment methods
+        Map<Integer, String> methodMap = new HashMap<>();
+        Scanner scanner = new Scanner(System.in);
+        boolean repeatFlag = true;
+        int paymentMethod = 0;
+
+        methodMap.put(1, "Savings");
+        methodMap.put(2, "Checking");
+        methodMap.put(3, "Credit Card");
+        methodMap.put(4, "GCash");
+
+        System.out.println("\nChoose Payment Option");
+        for (Map.Entry<Integer, String> entry : methodMap.entrySet())
+            System.out.println("[" + entry.getKey() + "] " + entry.getValue());
+        System.out.print("Enter Payment Option: ");
+
+        while (repeatFlag) {
+            try {
+                paymentMethod = scanner.nextInt();
+
+                if (paymentMethod < 1 || paymentMethod > 4)
+                    throw new InvalidInputException("Invalid input");
+                else
+                    repeatFlag = false;
+            } catch (InputMismatchException e) {
+                System.out.println("Invalid input. Please enter a valid number.");
+                scanner = new Scanner(System.in);
+            } catch (InvalidInputException e) {
+                System.out.println("Invalid input. Try again.");
+                scanner = new Scanner(System.in);
+            }
+        }
+
+        String[] first = {"Account name: David Beckham", "Name on card: David Beckham"};
+        String[] second = {"Account number: 005412345678", "Credit card name: 4028123456789012"};
+        String[] third = {"Bank name: BDO", "Expiry date: 12/2022"};
+        String payment123 = """
+                %s
+                %s
+                %s""";
+        String gCashPayment = """
+                Subscriber name: David Beckham
+                Mobile number: 09171234567""";
+        String paymentTextBlock = """
+                %s
+                Total amount due:
+                Total amount: %s
+                Total amount compact: %s
+                Number of items: %s""";
+        String paymentFirstPart, paymentDetails;
+
+        if (paymentMethod == 1 || paymentMethod == 2 || paymentMethod == 3) {
+            if (paymentMethod == 3)
+                paymentFirstPart = payment123.formatted(first[1], second[1], third[1]);
+            else
+                paymentFirstPart = payment123.formatted(first[0], second[0], third[0]);
+            paymentDetails = paymentTextBlock.formatted(
+                    paymentFirstPart, total, amountFormat.format(total), numberOfItems
+            );
+        } else
+            paymentDetails = paymentTextBlock.formatted(
+                    gCashPayment, total, amountFormat.format(total), numberOfItems
+            );
+        System.out.println("\n" + paymentDetails);
+        showCartItems();
+        System.out.println();
+
+        // Save file
+        Path filepath = Paths.get("src//receipt.txt");
+        try {
+            Files.writeString(filepath, paymentDetails, StandardOpenOption.WRITE);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        // Reset
+        itemCart.clear();
+        transactCart.clear();
+        numberOfItems = 0;
     }
 }

@@ -3,9 +3,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class Main extends Helper {
     public static void main(String[] args) {
+        boolean categoryFlag = true;
         String[] categoryList = {"Pantry", "Meat/Poultry/Seafood", "Snacks"};
         AtomicInteger itemKey = new AtomicInteger(0);
-        boolean categoryFlag = true;
 
         readStocks();
 
@@ -16,7 +16,10 @@ public class Main extends Helper {
 
             switch (selectedCategory) {
                 case -1 -> {
-                    categoryFlag = false;
+                    if (itemCart.isEmpty())
+                        System.out.println("\nCart is empty, nothing to checkout.\n");
+                    else
+                        checkout();
                     continue;
                 }
                 case -2 -> {
@@ -42,7 +45,7 @@ public class Main extends Helper {
                     continue;
                 }
 
-                String unit = itemList.get(selectedCategory).get(selectedItem).getUnit();
+                String unit = itemList.get(selectedCategory).get(selectedItem).unit();
                 double quantity = validateQuantity(unit);
                 if (unit.equals("kg"))
                     numberOfItems++;
