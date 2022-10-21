@@ -1,29 +1,56 @@
-import java.util.Scanner;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class Main extends Helper {
     public static void main(String[] args) {
-        Texts texts = new Texts();
-        Scanner scanner = new Scanner(System.in);
         String[] categoryList = {"Pantry", "Meat/Poultry/Seafood", "Snacks"};
         AtomicInteger itemKey = new AtomicInteger(0);
+        boolean categoryFlag = true;
 
         readStocks();
 
-        System.out.println(texts.showCategories());
-        System.out.print("Choose Category(-1 to Checkout, -2 to Exit):");
-        int selectedCategory = scanner.nextInt() - 1;
+        while (categoryFlag) {
+            // Show categories
+            showCategories();
+            int selectedCategory = validateSelectedCategory();
 
-        System.out.println("\n%s Items:".formatted(categoryList[selectedCategory]));
-        itemList.get(selectedCategory).forEach(item -> System.out.println(texts.showItemsOnCategory(itemKey, item)));
+            switch (selectedCategory) {
+                case -1 -> {
+                    categoryFlag = false;
+                    continue;
+                }
+                case -2 -> {
+                    categoryFlag = false;
+                    continue;
+                }
+                case 0 -> { continue; }
+                default ->  selectedCategory--;
+            }
+            List<Item> itemsInCategory = itemList.get(selectedCategory);
 
-        // -->
+            System.out.println("\n%s Items:".formatted(categoryList[selectedCategory]));
+            itemsInCategory.forEach(item -> showItemsInCategory(itemKey, item));
+            itemKey.set(0);
 
-        System.out.print("\nChoose item (-1 to go back to Categories):");
-        int selectedItem = scanner.nextInt();
-        System.out.print("Enter how many:");
-        double quantity = scanner.nextDouble();
+            // Show items on category
+            boolean itemFlag = true;
 
-        addToCart(selectedCategory, selectedItem, quantity);
+            while (itemFlag) {
+                int selectedItem = validatedSelectedItem(itemsInCategory.size() - 1);
+                if (selectedItem == -1) {
+                    itemFlag = false;
+                    continue;
+                }
+
+                String unit = itemList.get(selectedCategory).get(selectedItem).getUnit();
+                double quantity = validateQuantity(unit);
+                if (unit.equals("kg"))
+                    numberOfItems++;
+                else
+                    numberOfItems += quantity;
+
+                addToCart(selectedCategory, selectedItem, quantity);
+            }
+        }
     }
 }
