@@ -270,6 +270,7 @@ public class Helper {
         // Save file
         Path filepath = Paths.get("src//receipt.txt");
         try {
+            Files.newBufferedWriter(filepath , StandardOpenOption.TRUNCATE_EXISTING);
             Files.writeString(filepath, paymentDetails, StandardOpenOption.WRITE);
         } catch (IOException e) {
             e.printStackTrace();

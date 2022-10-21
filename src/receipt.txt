@@ -1,7 +1,7 @@
-Account name: David Beckham
-Account number: 005412345678
-Bank name: BDO
+Name on card: David Beckham
+Credit card name: 4028123456789012
+Expiry date: 12/2022
 Total amount due:
-Total amount: 113.25
-Total amount compact: 113
-Number of items: 4of items: 2
+Total amount: 348.0
+Total amount compact: 348
+Number of items: 1
