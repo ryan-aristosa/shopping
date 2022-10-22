@@ -1,21 +1,20 @@
-import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
-
 public class Main extends Helper {
     public static void main(String[] args) {
         boolean categoryFlag = true;
-        String[] categoryList = {"Pantry", "Meat/Poultry/Seafood", "Snacks"};
-        AtomicInteger itemKey = new AtomicInteger(0);
+        Texts texts = new Texts();
 
+        // Read the available items from stocks.csv file
         readStocks();
 
         while (categoryFlag) {
-            // Show categories
-            showCategories();
+            // Ask the user the grocery category, or to checkout or exit
+            texts.displayCategories();
+            System.out.print("\nChoose Category(-1 to Checkout, -2 to Exit):");
             int selectedCategory = validateSelectedCategory();
 
             switch (selectedCategory) {
                 case -1 -> {
+                    // Upon checkout, ask user the payment method
                     if (itemCart.isEmpty())
                         System.out.println("\nCart is empty, nothing to checkout.\n");
                     else
@@ -28,26 +27,26 @@ public class Main extends Helper {
                     continue;
                 }
                 case 0 -> { continue; }
-                default ->  selectedCategory--;
+                default -> selectedCategory--;
             }
-            List<Item> itemsInCategory = itemList.get(selectedCategory);
 
-            System.out.println("\n%s Items:".formatted(categoryList[selectedCategory]));
-            itemsInCategory.forEach(item -> showItemsInCategory(itemKey, item));
-            itemKey.set(0);
-
-            // Show items on category
+            // Display the items under the chosen category
+            texts.displayItems(itemList, selectedCategory);
             boolean itemFlag = true;
 
             while (itemFlag) {
-                int selectedItem = validatedSelectedItem(itemsInCategory.size() - 1);
+                // Ask the user the item to add to cart
+                System.out.print("\nChoose item (-1 to go back to Categories):");
+                int selectedItem = validateInput("item", itemList.get(selectedCategory).size() - 1);
                 if (selectedItem == -1) {
                     itemFlag = false;
                     continue;
                 }
 
                 String unit = itemList.get(selectedCategory).get(selectedItem).unit();
+                System.out.print("Enter how many:");
                 double quantity = validateQuantity(unit);
+
                 if (unit.equals("kg"))
                     numberOfItems++;
                 else

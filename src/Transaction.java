@@ -1,3 +1,4 @@
+// Model for transaction (quantity, and subtotal)
 public class Transaction {
     private double quantity, subTotal;
 
@@ -19,13 +20,5 @@ public class Transaction {
 
     public void setSubTotal(double subTotal) {
         this.subTotal = subTotal;
-    }
-
-    @Override
-    public String toString() {
-        return "Transaction{" +
-                "quantity=" + quantity +
-                ", subTotal=" + subTotal +
-                '}';
     }
 }
